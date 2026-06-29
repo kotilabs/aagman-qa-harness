@@ -1,0 +1,105 @@
+name: backtest-10-prompts
+env: staging
+tests:
+  - id: bt-01-nifty50-directional-call
+    type: backtest
+    prompt: |
+      Backtest a long-call options strategy on NIFTY 50 (NSE) from 1 January 2025 to 30 April 2025. Entry: BUY one ATM call option on NIFTY 50. Expiry: Weekly. Bars: 1-day timeframe. Exit: Stop loss at 50% of premium paid. Take profit at 50% of premium paid. Position sizing: 1 lot per trade. Execution: NRML, market orders. No fees, no slippage.
+    expected_contains: ["TOTAL PnL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "No expiry-calendar data available"
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 120
+
+  - id: bt-02-niftybank-short-straddle
+    type: backtest
+    prompt: |
+      Backtest a short straddle options strategy on NIFTY BANK (NSE) from 1 January 2025 to 31 December 2025. Entry: SELL one ATM call AND SELL one ATM put on NIFTY BANK. Expiry: Weekly. Bars: 1-day timeframe. Exit: Take profit at 50% of premium collected. Stop loss at 100% of premium collected. Position sizing: 1 lot per leg per trade. Execution: NRML, market orders. No fees, no slippage.
+    expected_contains: ["TOTAL PnL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "No expiry-calendar data available"
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 120
+
+  - id: bt-03-nifty50-iron-condor
+    type: backtest
+    prompt: |
+      Backtest an iron condor options strategy on NIFTY 50 (NSE) from 1 June 2025 to 4 May 2026. Entry: SELL one 25-delta call AND SELL one 25-delta put. BUY one 10-delta call wing AND BUY one 10-delta put wing. Expiry: Monthly. Bars: 1-day timeframe. Exit: Exit all four legs at 3 days to expiry. Position sizing: Fixed 1 lot per leg per trade. Execution: NRML, market orders. No fees, no slippage.
+    expected_contains: ["TOTAL PnL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 120
+
+  - id: bt-04-niftybank-bull-call-spread
+    type: backtest
+    prompt: |
+      Backtest a bull call spread options strategy on NIFTY BANK (NSE) from 1 January 2025 to 31 December 2025. Entry: BUY one ATM call AND SELL one 500-point OTM call on NIFTY BANK. Expiry: Weekly. Bars: 1-day timeframe. Exit: Stop loss at 50% of net premium paid. Position sizing: 1 lot per trade. Execution: NRML, market orders. No fees, no slippage.
+    expected_contains: ["TOTAL PnL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "No expiry-calendar data available"
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 120
+
+  - id: bt-05-nifty50-short-put-ivrank
+    type: backtest
+    prompt: |
+      Backtest a short-put options strategy on NIFTY 50 (NSE) from 1 January 2025 to 30 April 2025. Entry: SELL one 30-delta put option on NIFTY 50 when IV rank is above 60. Expiry: Current month. Bars: 1-day timeframe. Exit: Take profit at 50% of premium collected. Stop loss at 100% of premium collected. Position sizing: 1 lot per trade. Execution: NRML, market orders. No fees, no slippage.
+    expected_contains: ["TOTAL PnL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 120
+
+  - id: bt-06-niftybees-5m-ema-crossover
+    type: backtest
+    prompt: |
+      Backtest a long-only EMA crossover strategy on NIFTYBEES (NSE) on a 5-minute timeframe from 1 January 2025 to 1 January 2026. Entry: Go LONG when EMA(20) crosses above EMA(50). Exit: Stop loss at 1.5% below entry. Take profit at 4.5% above entry. Starting capital Rs 10,00,000. Buy 100 shares per trade. Fees 5 bps, slippage 3 bps.
+    expected_contains: ["TOTAL PnL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 180
+
+  - id: bt-07-bankbees-15m-macd
+    type: backtest
+    prompt: |
+      Backtest a long-only MACD momentum strategy on BANKBEES (NSE) on a 15-minute timeframe from 1 January 2025 to 1 January 2026. Entry: Go LONG when the MACD line (12, 26, 9) crosses above the signal line, AND the closing price is above SMA(200). Exit: Stop loss at 1.5% below entry. Take profit at 4.5% above entry. Starting capital Rs 10,00,000. Buy 100 shares per trade. Fees 5 bps, slippage 3 bps.
+    expected_contains: ["TOTAL PnL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 180
+
+  - id: bt-08-niftybees-30m-breakout
+    type: backtest
+    prompt: |
+      Backtest a long-only breakout strategy on NIFTYBEES (NSE) on a 30-minute timeframe from 1 January 2025 to 1 January 2026. Entry: Go LONG when close crosses above the 20-period high. Exit: Stop loss at 2% below entry. Take profit at 6% above entry. Starting capital Rs 10,00,000. Buy 100 shares per trade. Fees 5 bps, slippage 3 bps.
+    expected_contains: ["TOTAL PnL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 180
+
+  - id: bt-09-hdfcbank-1h-rsi-meanreversion
+    type: backtest
+    prompt: |
+      Backtest a long-only RSI mean-reversion strategy on HDFCBANK (NSE) on a 1-hour timeframe from 1 January 2025 to 1 January 2026. Entry: Go LONG when RSI(14) crosses above 30, AND the closing price is above SMA(200). Exit: Stop loss at 2% below entry. Take profit at 6% above entry. Starting capital Rs 10,00,000. Buy 50 shares per trade. Fees 5 bps, slippage 3 bps.
+    expected_contains: ["TOTAL PnL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 180
+
+  - id: bt-10-niftybees-5m-trailing-stop
+    type: backtest
+    prompt: |
+      Backtest a long-only EMA crossover strategy on NIFTYBEES (NSE) on a 5-minute timeframe from 1 January 2025 to 1 January 2026. Entry: Go LONG when EMA(20) crosses above EMA(50). Exit: No fixed stop loss. Trailing stop loss at 2% below the highest price reached since entry. Take profit at 6% above entry. Starting capital Rs 10,00,000. Buy 100 shares per trade. Fees 5 bps, slippage 3 bps.
+    expected_contains: ["TOTAL PnL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 180

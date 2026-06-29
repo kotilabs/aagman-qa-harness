@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aagman-qa"
+version = "0.1.0"
+description = "CLI QA harness for Aagman (browser-use + GitHub reporting)"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0",
+]
+
+[project.scripts]
+aagman-qa = "aagman_qa.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aagman_qa*"]

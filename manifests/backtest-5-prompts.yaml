@@ -1,0 +1,54 @@
+name: backtest-5-prompts
+env: prod
+tests:
+  - id: bt-01-bull-call-spread-niftybank
+    type: backtest
+    prompt: |
+      Backtest a bull call spread options strategy on NIFTY BANK (NSE) from 1 January 2025 to 31 December 2025. Entry: BUY one ATM call AND SELL one 500-point OTM call on NIFTY BANK. Expiry: Weekly. Bars: 1-day timeframe. Exit: Stop loss at 50% of net premium paid. Position sizing: 1 lot per trade. Execution: NRML, market orders. No fees, no slippage.
+    expected_contains: ["TOTAL PNL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "No expiry-calendar data available"
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 180
+
+  - id: bt-02-ema-crossover-rsi-reliance
+    type: backtest
+    prompt: |
+      Backtest a long-only EMA crossover strategy on RELIANCE (NSE) from 1 January 2025 to 31 December 2025. Entry: Go LONG when EMA(20) crosses above EMA(50) on the daily close, AND RSI(14) is above 50. Exit: Stop loss at 1.5% below entry. Take profit at 4.5% above entry. Position sizing: Buy 50 shares per trade. Bars: 1-day timeframe. Execution: Market orders. Fees: 5 bps, slippage: 3 bps.
+    expected_contains: ["TOTAL PNL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 180
+
+  - id: bt-03-macd-bearish-short-tcs
+    type: backtest
+    prompt: |
+      Backtest a short-only MACD bearish crossover strategy on TCS (NSE) from 1 January 2025 to 31 December 2025. Entry: Go SHORT when the MACD line (12, 26, 9) crosses below the signal line, AND the MACD histogram is below zero, AND the closing price is below SMA(100). Exit: Stop loss at 1.5% above entry. Take profit at 4.5% below entry. Position sizing: Sell 50 shares per trade. Bars: 1-day timeframe. Execution: Market orders. Fees: 5 bps, slippage: 3 bps.
+    expected_contains: ["TOTAL PNL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 180
+
+  - id: bt-04-short-straddle-nifty
+    type: backtest
+    prompt: |
+      Backtest a short straddle options strategy on NIFTY (NSE) from 1 January 2025 to 31 December 2025. Entry: SELL one ATM call AND SELL one ATM put on NIFTY when INDIA VIX is above 20. Expiry: Monthly. Bars: 1-day timeframe. Exit: Close both legs when INDIA VIX drops below 15. Position sizing: 1 lot per leg per trade. Execution: NRML, market orders. No fees, no slippage.
+    expected_contains: ["TOTAL PNL", "MAX DRAWDOWN", "WIN RATE"]
+    error_markers:
+      - "No expiry-calendar data available"
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 180
+
+  - id: bt-05-portfolio-momentum-nifty50
+    type: backtest
+    prompt: |
+      Backtest a portfolio of the top 3 stocks from RELIANCE, TCS, INFY, HDFCBANK, ICICIBANK, SBIN, WIPRO, LT ranked by 6-month price momentum, on the NSE from 1 January 2023 to 31 December 2024. Rebalance: Monthly. Weighting: Equal weight. Starting capital: Rs 10,00,000. Bars: 1-day timeframe. Execution: Market orders. Fees: 5 bps, slippage: 3 bps.
+    expected_contains: ["TOTAL PNL", "MAX DRAWDOWN", "Total Trades"]
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 240

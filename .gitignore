@@ -1,0 +1,22 @@
+# Environment
+.env
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Generated reports
+reports/
+artifacts/
+
+# Browser-use / Chrome profile data created during runs
+.chrome-data*
+.local/
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store

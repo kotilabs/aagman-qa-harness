@@ -1,0 +1,24 @@
+name: research-smoke
+env: staging
+tests:
+  - id: rs-01-nifty-50-above-200sma
+    type: research
+    prompt: |
+      Find NSE stocks in the Nifty 50 index that are trading above their 200-day simple moving average and have RSI(14) between 50 and 70.
+    success_markers: ["Found", "Symbol", "LTP", "matches"]
+    error_markers:
+      - "Something went wrong"
+      - "failed to fetch"
+      - "Unable to process"
+    timeout: 90
+
+  - id: rs-02-top-5-volume-gainers
+    type: research
+    prompt: |
+      Screen the top 5 NSE stocks by relative volume today, with price above Rs 500 and market cap above Rs 10,000 crore.
+    success_markers: ["Found", "Symbol", "LTP", "Volume"]
+    error_markers:
+      - "Something went wrong"
+      - "failed to fetch"
+      - "Unable to process"
+    timeout: 90

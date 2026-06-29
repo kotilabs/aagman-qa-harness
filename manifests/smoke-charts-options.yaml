@@ -1,0 +1,16 @@
+name: smoke-charts-options
+env: staging
+tests:
+  - id: charts-timeframes-and-indicators
+    type: charts
+    title: Charts smoke — timeframes and indicators
+    description: Verify the chart canvas loads, switch across 1m/5m/15m/1h/1d timeframes, and add SMA, EMA and RSI indicators.
+    timeframes: ["1m", "5m", "15m", "1h", "1d"]
+    indicators: ["SMA", "EMA", "RSI"]
+    timeout: 90
+
+  - id: options-chain-payoff-vol-surface
+    type: options
+    title: Options smoke — chain, payoff builder and vol surface
+    description: Verify the option chain loads (PCR/Max Pain/ATM IV), add/remove payoff legs, and generate the volatility surface.
+    timeout: 120
