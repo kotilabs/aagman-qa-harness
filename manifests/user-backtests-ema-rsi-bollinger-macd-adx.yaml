@@ -1,0 +1,72 @@
+name: user-backtests-ema-rsi-bollinger-macd-adx
+env: staging
+tests:
+  - id: ema-crossover-reliance
+    type: backtest
+    prompt: |
+      Backtest a long-only EMA crossover strategy on RELIANCE (NSE) on a 1-day timeframe from 1 January 2025 to 1 January 2026. Entry: Go LONG when EMA(20) crosses above EMA(50) on the daily close. Exit: Stop loss at 1.5% below entry. Take profit at 4.5% above entry. Position sizing: Buy 50 shares per trade. Fees 5 bps, slippage 3 bps.
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+      - "No data available"
+    timeout: 240
+
+  - id: rsi-mean-reversion-hdfcbank
+    type: backtest
+    prompt: |
+      Backtest a long-only RSI mean-reversion strategy on HDFCBANK (NSE) on a 1-day timeframe from 1 January 2025 to 1 January 2026. Entry: Go LONG when RSI(14) crosses above 30, AND the closing price is above SMA(200). Exit: Stop loss at 2% below entry. Take profit at 6% above entry. Position sizing: Buy 50 shares per trade. Fees 5 bps, slippage 3 bps.
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+      - "No data available"
+    timeout: 240
+
+  - id: bollinger-rsi-infy
+    type: backtest
+    prompt: |
+      Backtest a long-only Bollinger Band reversion strategy on INFY (NSE) on a 1-day timeframe from 1 January 2025 to 1 January 2026. Entry: Go LONG when the daily closing price crosses above the lower Bollinger Band (20-period, 2 standard deviations), AND RSI(14) is below 40. Exit: Stop loss at 2% below entry. Take profit at 5% above entry. Position sizing: Buy 50 shares per trade. Fees 5 bps, slippage 3 bps.
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+      - "No data available"
+    timeout: 240
+
+  - id: macd-momentum-tcs
+    type: backtest
+    prompt: |
+      Backtest a long-only MACD momentum strategy on TCS (NSE) on a 1-day timeframe from 1 January 2025 to 1 January 2026. Entry: Go LONG when the MACD line (12, 26, 9) crosses above the signal line, AND the closing price is above SMA(200). Exit: Stop loss at 1.5% below entry. Take profit at 4.5% above entry. Position sizing: Buy 50 shares per trade. Fees 5 bps, slippage 3 bps.
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+      - "No data available"
+    timeout: 240
+
+  - id: adx-trend-ema-wipro
+    type: backtest
+    prompt: |
+      Backtest a long-only trend-following strategy on WIPRO (NSE) on a 1-day timeframe from 1 January 2025 to 1 January 2026. Entry: Go LONG when ADX(14) is above 25, the closing price is above EMA(50), AND EMA(20) crosses above EMA(50). Exit: Stop loss at 2% below entry. Take profit at 6% above entry. Position sizing: Buy 50 shares per trade. Fees 5 bps, slippage 3 bps.
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+      - "No data available"
+    timeout: 240
