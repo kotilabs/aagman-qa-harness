@@ -316,11 +316,14 @@ def _generate_summary(summary: dict) -> str:
     tests = summary.get("tests", [])
     failures = [t for t in tests if t.get("status") == "FAIL"]
     passes = [t for t in tests if t.get("status") == "PASS"]
+    blocked = [t for t in tests if t.get("status") == "BLOCKED"]
     parts = []
     if passes:
         parts.append(f"{len(passes)} test(s) passed and produced valid report cards.")
     if failures:
         parts.append(f"{len(failures)} test(s) failed — see per-test analysis below.")
+    if blocked:
+        parts.append(f"{len(blocked)} test(s) blocked on a clarification question — see screenshots.")
     if not parts:
         parts.append("No tests were run.")
     return " ".join(parts)

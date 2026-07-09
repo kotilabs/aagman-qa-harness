@@ -8,6 +8,7 @@ from ..checks import (
     capture_failure_screenshot,
     wait_for_any_text,
 )
+from ..clarifications import detect_clarification
 from ..interactions import submit_aagman_prompt
 
 
@@ -68,7 +69,13 @@ def _start_new_screener_chat(browser: Browser) -> None:
     time.sleep(2)
 
 
-def run(browser: Browser, base_url: str, test: dict, artifact_dir: Path) -> TestResult:
+def run(
+    browser: Browser,
+    base_url: str,
+    test: dict,
+    artifact_dir: Path,
+    answer_provider=None,
+) -> TestResult:
     test_id = test["id"]
     prompt = test["prompt"]
     success_markers = test.get("success_markers", ["Found", "matches", "Symbol", "LTP", "Results"])
@@ -83,6 +90,18 @@ def run(browser: Browser, base_url: str, test: dict, artifact_dir: Path) -> Test
     result = TestResult(id=test_id, status="PASS", duration_sec=0.0, prompt=prompt)
     start = time.time()
 
+    def block(question: str) -> None:
+        result.status = "BLOCKED"
+        result.message = f"Clarification not answered: {question[:300]}"
+        result.duration_sec = round(time.time() - start, 2)
+        ss_path = artifact_dir / f"{test_id}_blocked.png"
+        try:
+            capture_failure_screenshot(browser, ss_path)
+            result.add_screenshot(ss_path)
+            result.add_log(f"Blocked screenshot captured: {ss_path}")
+        except Exception as ss_exc:
+            result.add_log(f"Blocked screenshot failed: {ss_exc}")
+
     try:
         _navigate_to_research(browser, base_url)
         result.add_log("Navigated to Research")
@@ -90,18 +109,50 @@ def run(browser: Browser, base_url: str, test: dict, artifact_dir: Path) -> Test
         _start_new_screener_chat(browser)
         result.add_log("Started a new screener chat")
 
-        submit_aagman_prompt(browser, prompt)
-        result.add_log(f"Submitted prompt: {prompt[:80]}...")
+        current_text = prompt
+        last_question: str | None = None
+        for round_num in range(3):
+            submit_aagman_prompt(browser, current_text)
+            result.add_log(f"Submitted prompt (round {round_num + 1}): {current_text[:80]}...")
 
-        found = wait_for_any_text(browser, success_markers + error_markers, timeout=timeout, interval=1.0)
-        if found in error_markers:
-            raise RuntimeError(f"Research error marker detected: {found}")
-        if found is None:
-            raise RuntimeError("Timeout waiting for screener results")
+            found = wait_for_any_text(browser, success_markers + error_markers, timeout=10, interval=0.5)
+            if found:
+                if found in error_markers:
+                    raise RuntimeError(f"Research error marker detected: {found}")
+                break
 
-        assert_no_error_texts(browser, error_markers)
-        result.add_log(f"Success marker found: {found}")
-        result.duration_sec = round(time.time() - start, 2)
+            # No success/error marker yet — check for clarification.
+            question = detect_clarification(browser, success_markers, error_markers)
+            if question and answer_provider is not None:
+                # If the same question is still visible, the page hasn't updated yet.
+                if last_question is not None and question.strip() == last_question.strip():
+                    result.add_log("Same clarification still visible; waiting for page update")
+                    break
+                last_question = question
+                result.add_log(f"Detected clarification: {question[:200]}")
+                answer = answer_provider.get_answer(prompt, question, browser.eval("document.body.innerText"), test)
+                if answer:
+                    result.add_log(f"Answer generated: {answer[:200]}")
+                    current_text = answer
+                    continue
+                else:
+                    block(question)
+                    return result
+            else:
+                # Not a clarification; let the final long wait handle it.
+                break
+
+        # Final wait for screener results.
+        if result.status != "BLOCKED":
+            found = wait_for_any_text(browser, success_markers + error_markers, timeout=timeout, interval=1.0)
+            if found in error_markers:
+                raise RuntimeError(f"Research error marker detected: {found}")
+            if found is None:
+                raise RuntimeError("Timeout waiting for screener results")
+
+            assert_no_error_texts(browser, error_markers)
+            result.add_log(f"Success marker found: {found}")
+            result.duration_sec = round(time.time() - start, 2)
     except Exception as exc:
         result.status = "FAIL"
         result.message = str(exc)

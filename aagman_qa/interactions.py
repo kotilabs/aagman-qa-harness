@@ -83,4 +83,40 @@ def submit_aagman_prompt(browser: Browser, prompt: str) -> None:
 }})()
 """)
 
-    time.sleep(1)
+    # Wait for the message to actually leave the input box. The send button can be
+    # disabled while Aagman is "Thinking", so retry if the text is still present.
+    for _ in range(10):
+        time.sleep(0.5)
+        remaining = browser.eval("""
+(() => {
+  const allInputs = [];
+  const walk = (root) => {
+    root.querySelectorAll('textarea').forEach(el => allInputs.push(el));
+    root.querySelectorAll('*').forEach(el => { if (el.shadowRoot) walk(el.shadowRoot); });
+  };
+  walk(document);
+  const inp = allInputs.find(i => (i.placeholder || '').includes('Brief your agents')) || allInputs[0];
+  return inp ? inp.value.trim() : '';
+})()
+""")
+        if not str(remaining):
+            break
+        # Text still there — try pressing Enter to force send.
+        browser.eval("""
+(() => {
+  const allInputs = [];
+  const walk = (root) => {
+    root.querySelectorAll('textarea').forEach(el => allInputs.push(el));
+    root.querySelectorAll('*').forEach(el => { if (el.shadowRoot) walk(el.shadowRoot); });
+  };
+  walk(document);
+  const inp = allInputs.find(i => (i.placeholder || '').includes('Brief your agents')) || allInputs[0];
+  if (inp) {
+    inp.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    return 'RETRY_ENTER';
+  }
+  return 'NO_INPUT';
+})()
+""")
+    else:
+        time.sleep(0.5)

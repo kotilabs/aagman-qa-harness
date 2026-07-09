@@ -72,7 +72,7 @@ def _active_indicator_names(browser: Browser) -> list[str]:
     return browser.eval(script) or []
 
 
-def run(browser: Browser, base_url: str, test: dict, artifact_dir: Path) -> TestResult:
+def run(browser: Browser, base_url: str, test: dict, artifact_dir: Path, answer_provider=None) -> TestResult:
     test_id = test["id"]
     timeframes = test.get("timeframes", ["1m", "5m", "15m", "1h", "1d"])
     indicators = test.get("indicators", ["SMA", "EMA", "RSI"])

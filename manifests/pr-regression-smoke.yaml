@@ -1,0 +1,217 @@
+name: pr-regression-smoke
+env: prod
+tests:
+  # #2182 / #2214 / #2220 — options spot-name -> F&O ticker canonicalization
+  - id: pr-2182-iron-condor-nifty50
+    type: backtest
+    prompt: |
+      Backtest an iron condor on NIFTY 50, monthly expiry, from 1 June 2025 to 4 May 2026
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+      - "No expiry-calendar data available"
+    timeout: 240
+
+  - id: pr-2182-short-straddle-banknifty
+    type: backtest
+    prompt: |
+      Backtest a short straddle on Bank Nifty, weekly expiry, from 1 January 2025 to 30 April 2025
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+      - "No expiry-calendar data available"
+    timeout: 240
+
+  # #2185 — intraday rollup timeframes for spot/equity/index
+  # NIFTYBEES 5m data is missing for this period; see pr-2185-niftybees-data-missing.
+  # Using RELIANCE as a liquid spot stock to verify 5m intraday rollup works.
+  - id: pr-2185-reliance-5m-long
+    type: backtest
+    prompt: |
+      Backtest a LONG-only opening-range breakout on RELIANCE on a 5-minute timeframe from 1 Jan 2025 to 30 Apr 2025.
+      Opening range: first 30 minutes (09:15–09:45 IST).
+      Entry: buy when a 5-minute candle closes above the 30-minute opening range high.
+      Exit: close the position at 15:15 IST end-of-day, or if the price falls back below the opening range low.
+      Stop loss: 1% below entry price. Take profit: 2% above entry price.
+      Position sizing: 100 shares per trade, starting capital Rs 10,00,000.
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+      - "No data returned"
+    timeout: 240
+
+  - id: pr-2185-reliance-5m-short
+    type: backtest
+    prompt: |
+      Backtest a SHORT-only opening-range breakdown on RELIANCE on a 5-minute timeframe from 1 Jan 2025 to 30 Apr 2025.
+      Opening range: first 30 minutes (09:15–09:45 IST).
+      Entry: sell when a 5-minute candle closes below the 30-minute opening range low.
+      Exit: close the position at 15:15 IST end-of-day, or if the price rises back above the opening range high.
+      Stop loss: 1% above entry price. Take profit: 2% below entry price.
+      Position sizing: 100 shares per trade, starting capital Rs 10,00,000.
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+      - "No data returned"
+    timeout: 240
+
+  # Known data-gap regression: NIFTYBEES 5m data is not available for this period.
+  - id: pr-2185-niftybees-data-missing
+    type: backtest
+    prompt: |
+      Backtest a LONG-only opening-range breakout on NIFTYBEES on a 5-minute timeframe from 1 Jan 2025 to 30 Apr 2025.
+      Opening range: first 30 minutes (09:15–09:45 IST).
+      Entry: buy when a 5-minute candle closes above the 30-minute opening range high.
+      Exit: close the position at 15:15 IST end-of-day.
+      Stop loss: 1% below entry price. Take profit: 2% above entry price.
+      Position sizing: 100 shares per trade, starting capital Rs 10,00,000.
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+      - "No data returned"
+    timeout: 240
+
+  # #2190 — continuous futures (MCX works today; NSE equity futures data still pending)
+  - id: pr-2190-crudeoil-continuous
+    type: backtest
+    prompt: |
+      Backtest a CRUDEOIL continuous futures breakout strategy on a 1-day timeframe from 1 Jan 2024 to 31 Dec 2024
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 240
+
+  # #2192 — options intraday rollups (5m/15m)
+  - id: pr-2192-nifty-straddle-5m
+    type: backtest
+    prompt: |
+      Backtest a NIFTY long straddle ATM nearest expiry on 5-minute bars for 2026-03-30
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+      - "Unsupported intraday options timeframe"
+    timeout: 240
+
+  # #2193 — strategy agent current IST date / relative phrases
+  - id: pr-2193-infy-this-quarter
+    type: backtest
+    prompt: |
+      Run a 30-minute RSI mean-reversion backtest on INFY this quarter
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 240
+
+  - id: pr-2193-reliance-last-6m
+    type: backtest
+    prompt: |
+      Backtest a 20/50 EMA crossover on RELIANCE over the last 6 months
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 240
+
+  # #2202 — allocation agent current date
+  - id: pr-2202-sip-last-3y
+    type: backtest
+    prompt: |
+      Backtest a monthly SIP of ₹10,000 into Parag Parikh Flexi Cap over the last 3 years
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+    timeout: 240
+
+  # #2207 — generic chat options/futures resolver asset class
+  - id: pr-2207-iron-condor-nifty-generic
+    type: backtest
+    prompt: |
+      Backtest an iron condor on NIFTY for the last 3 months
+    expected_contains:
+      - "TOTAL PNL"
+      - "MAX DRAWDOWN"
+      - "WIN RATE"
+    error_markers:
+      - "Cannot run backtest"
+      - "Backtest failed"
+      - "Symbol resolution failed"
+    timeout: 240
+
+  # #2210 / #2211 — MF resolver + holdings comparison
+  - id: pr-2211-axis-vs-icici-smallcap
+    type: research
+    prompt: |
+      Compare the underlying stocks of Axis Small Cap Fund vs ICICI Small Cap Fund
+    success_markers:
+      - "Axis Small Cap Fund"
+      - "ICICI Prudential Smallcap Fund"
+      - "overlap"
+    timeout: 180
+
+  - id: pr-2210-top-holdings-icici-smallcap
+    type: research
+    prompt: |
+      Top holdings of ICICI Small Cap Fund
+    success_markers:
+      - "ICICI Prudential Smallcap Fund"
+      - "holding"
+      - "%"
+    timeout: 180
+
+  # #2185 / general — screener hybrid fundamental + technical
+  - id: pr-hybrid-rode-macd
+    type: research
+    prompt: |
+      ROE > 10 stocks that are showing bullish MACD crossover
+    success_markers:
+      - "Found"
+      - "Symbol"
+    timeout: 180
+
+  # #2202 — charting agent date anchor (harness charts runner)
+  - id: pr-2202-chart-reliance-6m
+    type: charts
+    title: "Chart RELIANCE daily last 6 months"
+    description: "Verify chart loads and cycles timeframes; date window should end near today."
+    timeframes: ["1d", "1w", "1m"]
+    indicators: ["SMA", "EMA"]
+    timeout: 120

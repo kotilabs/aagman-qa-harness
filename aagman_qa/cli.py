@@ -10,6 +10,7 @@ from . import auth, config
 from .auth import LoginRequiredError
 from .browser import Browser
 from .checks import TestResult
+from .clarifications import get_answer_provider
 from .github_publisher import publish
 from .reporter import write_report
 from .runners import backtest, charts, options, research
@@ -42,6 +43,12 @@ def cmd_run(args: argparse.Namespace) -> int:
     manifest_name = manifest.get("name", manifest_path.stem)
     tests = manifest.get("tests", [])
 
+    if args.test_id:
+        tests = [t for t in tests if t.get("id") == args.test_id]
+        if not tests:
+            print(f"Test id not found in manifest: {args.test_id}", file=sys.stderr)
+            return 1
+
     if not tests:
         print("No tests in manifest.", file=sys.stderr)
         return 1
@@ -51,6 +58,8 @@ def cmd_run(args: argparse.Namespace) -> int:
     artifact_dir = report_dir / "screenshots"
     report_dir.mkdir(parents=True, exist_ok=True)
     artifact_dir.mkdir(parents=True, exist_ok=True)
+
+    answer_provider = get_answer_provider(args.answer_provider, run_id, report_dir)
 
     profile = args.profile or config.browser_profile()
     cdp_url = args.cdp_url or config.browser_cdp_url()
@@ -83,9 +92,9 @@ def cmd_run(args: argparse.Namespace) -> int:
                 print(f"Unknown test type: {test_type}", file=sys.stderr)
                 continue
             print(f"\n▶ Running {test['id']} ({test_type})...")
-            result = runner(browser, base_url, test, artifact_dir)
+            result = runner(browser, base_url, test, artifact_dir, answer_provider=answer_provider)
             results.append(result)
-            icon = "✅" if result.status == "PASS" else "❌"
+            icon = {"PASS": "✅", "FAIL": "❌", "BLOCKED": "🚧", "ERROR": "⚠️"}.get(result.status, "❓")
             print(f"  {icon} {result.status} — {result.duration_sec}s — {result.message or 'OK'}")
     except Exception as exc:
         print(f"\n⚠️ Harness error: {exc}", file=sys.stderr)
@@ -95,12 +104,13 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     md_path = write_report(run_id, env, base_url, manifest_name, results, report_dir)
 
+    blocked = sum(1 for r in results if r.status == "BLOCKED")
     print(f"\n📄 Report: {md_path}")
     passed = sum(1 for r in results if r.status == "PASS")
     failed = sum(1 for r in results if r.status == "FAIL")
-    print(f"📊 {len(results)} tests | ✅ {passed} | ❌ {failed}")
+    print(f"📊 {len(results)} tests | ✅ {passed} | ❌ {failed} | 🚧 {blocked}")
 
-    if failed and not args.push:
+    if (failed or blocked) and not args.push:
         print(f"\nTo push after approval: aagman-qa push --run-id {run_id} --create-issue")
 
     if args.push:
@@ -111,7 +121,18 @@ def cmd_run(args: argparse.Namespace) -> int:
         if info.get("issue_url"):
             print(f"   Issue: {info['issue_url']}")
 
-    return 0 if failed == 0 else 1
+    return 0 if (failed == 0 and blocked == 0) else 1
+
+
+def cmd_answer(args: argparse.Namespace) -> int:
+    """Record an agent/human answer for a pending clarification."""
+    report_dir = Path(args.report_dir) / args.run_id
+    answers_dir = report_dir / "answers"
+    answers_dir.mkdir(parents=True, exist_ok=True)
+    answer_file = answers_dir / f"{args.test_id}.txt"
+    answer_file.write_text(args.text, encoding="utf-8")
+    print(f"✅ Answer recorded for {args.run_id}/{args.test_id}")
+    return 0
 
 
 def cmd_push(args: argparse.Namespace) -> int:
@@ -144,6 +165,8 @@ def main() -> int:
     run_parser.add_argument("--phone", help="Phone number for login. Falls back to AAGMAN_PHONE env var.")
     run_parser.add_argument("--otp", help="OTP for login. Falls back to AAGMAN_OTP env var.")
     run_parser.add_argument("--output-dir", default="reports", help="Directory for reports")
+    run_parser.add_argument("--answer-provider", choices=["manifest", "default", "interactive", "blocked", "llm"], default="interactive", help="How to handle clarification questions from the app")
+    run_parser.add_argument("--test-id", help="Run only the test with this id")
     run_parser.add_argument("--push", action="store_true", help="Push results to GitHub after run")
     run_parser.add_argument("--issue", type=int, help="Existing GitHub issue number to comment on")
     run_parser.add_argument("--create-issue", action="store_true", help="Create a new GitHub issue with the report")
@@ -155,6 +178,13 @@ def main() -> int:
     push_parser.add_argument("--issue", type=int, help="Existing GitHub issue number to comment on")
     push_parser.add_argument("--create-issue", action="store_true", help="Create a new GitHub issue with the report")
     push_parser.set_defaults(func=cmd_push)
+
+    answer_parser = sub.add_parser("answer", help="Provide an answer to a pending clarification")
+    answer_parser.add_argument("--run-id", required=True, help="Run ID with the pending clarification")
+    answer_parser.add_argument("--test-id", required=True, help="Test ID that is blocked")
+    answer_parser.add_argument("--text", required=True, help="Answer text to submit")
+    answer_parser.add_argument("--report-dir", default="reports", help="Directory for reports")
+    answer_parser.set_defaults(func=cmd_answer)
 
     args = parser.parse_args()
     return args.func(args)

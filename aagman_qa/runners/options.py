@@ -96,7 +96,7 @@ def _generate_vol_surface(browser: Browser) -> bool:
 """))
 
 
-def run(browser: Browser, base_url: str, test: dict, artifact_dir: Path) -> TestResult:
+def run(browser: Browser, base_url: str, test: dict, artifact_dir: Path, answer_provider=None) -> TestResult:
     test_id = test["id"]
     timeout = test.get("timeout", 90)
 
