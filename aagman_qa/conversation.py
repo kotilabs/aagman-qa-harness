@@ -1,7 +1,6 @@
 """Read and scroll Aagman chat transcripts from the browser page."""
 from __future__ import annotations
 
-import ast
 import json
 from dataclasses import dataclass
 from typing import Iterable
@@ -66,21 +65,6 @@ _MESSAGE_SELECTOR_STRATEGIES = [
     });
     return msgs;
     """,
-    # Aagman workspace message bubbles.
-    """
-    const msgs = [];
-    const ws = document.querySelector('[class*="WorkspaceView-module"]');
-    const containers = ws ? Array.from(ws.querySelectorAll('[class*="MessageBubble-module"][class*="messageContainer"]')) : [];
-    containers.forEach(el => {
-      const cls = el.className || '';
-      let role = null;
-      if (/userMessage/.test(cls)) role = 'user';
-      else if (/aiMessage/.test(cls)) role = 'assistant';
-      const text = (el.innerText || '').trim();
-      if (text && role) msgs.push({role, text});
-    });
-    return msgs;
-    """,
 ]
 
 
@@ -126,12 +110,6 @@ def extract_messages(browser: Browser) -> list[Message]:
 """
         try:
             raw = browser.eval(script)
-            # browser-use sometimes returns large JS arrays/objects as Python repr strings.
-            if isinstance(raw, str) and raw.startswith("["):
-                try:
-                    raw = ast.literal_eval(raw)
-                except Exception:
-                    pass
             if not isinstance(raw, list):
                 continue
             messages = [Message(role=m.get("role"), text=m.get("text", "").strip()) for m in raw]
