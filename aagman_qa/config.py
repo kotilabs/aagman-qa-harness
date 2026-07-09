@@ -72,3 +72,20 @@ def screenshots_token() -> str | None:
 
 def tester_name() -> str:
     return os.getenv("AAGMAN_QA_TESTER", "Aryan")
+
+
+# LLM configuration for intelligent reply handling.
+def deepseek_api_key() -> str | None:
+    return os.getenv("DEEPSEEK_API_KEY")
+
+
+def llm_model() -> str:
+    return os.getenv("AAGMAN_QA_LLM_MODEL", "deepseek-chat")
+
+
+def llm_base_url() -> str:
+    return os.getenv("AAGMAN_QA_LLM_BASE_URL", "https://api.deepseek.com/v1")
+
+
+def llm_enabled() -> bool:
+    return bool(deepseek_api_key())
