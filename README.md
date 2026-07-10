@@ -135,7 +135,7 @@ aagman-qa run --env staging \
   --batch-backtest
 ```
 
-If you are not logged in, run without `--reuse-session`. The harness will open the Aagman staging page in the browser and pause:
+If you are not logged in, run without `--reuse-session`. The harness will open the Aagman staging page in the browser and wait for you:
 
 ```bash
 aagman-qa run --env staging \
@@ -149,12 +149,12 @@ You will see a prompt like:
 ```text
 🔐 Aagman login required.
    The browser is open at: https://app.staging.v2.aagman.ai/
-   Please log in using the physical Chrome window, then press Enter here to continue...
+   Please log in using the physical Chrome window. The harness will detect it automatically...
 ```
 
-Log in inside Chrome, then press **Enter** in the terminal. The harness detects the authenticated session and continues.
+Log in inside Chrome. As soon as the harness detects you are authenticated, it proceeds automatically (up to a 5-minute timeout).
 
-To skip the manual step, set `AAGMAN_PHONE` and `AAGMAN_OTP` (or pass `--phone` and `--otp`).
+To skip the manual step entirely, set `AAGMAN_PHONE` and `AAGMAN_OTP` (or pass `--phone` and `--otp`).
 
 ---
 
