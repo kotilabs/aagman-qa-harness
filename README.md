@@ -97,7 +97,6 @@ After installation the `aagman-qa` command is available.
 
 | Var | Purpose |
 |---|---|
-| `AAGMAN_PHONE` | Your registered phone number. The harness will prompt if not set. |
 | `GITHUB_TOKEN` or `GH_TOKEN` | Token for creating issues / posting comments. Needs `repo` scope. |
 | `GH_TOKEN_PERSONAL` (or `SCREENSHOTS_TOKEN`) | Token with write access to the public screenshots repo. Used for uploading artifacts. Defaults to `GITHUB_TOKEN` if unset. |
 
@@ -105,7 +104,8 @@ After installation the `aagman-qa` command is available.
 
 | Var | Purpose |
 |---|---|
-| `AAGMAN_OTP` | Pre-seed OTP for non-interactive runs. |
+| `AAGMAN_PHONE` | Your registered phone number. Used for automated OTP login. |
+| `AAGMAN_OTP` | Pre-seed OTP for non-interactive runs. If both `AAGMAN_PHONE` and `AAGMAN_OTP` are set, the harness logs in automatically. |
 | `AAGMAN_QA_SCREENSHOTS_REPO` | `<owner>/<repo>` for artifact uploads. Default: `iamaryansinha/aagman-qa-screenshots`. |
 | `GITHUB_OWNER` / `GITHUB_REPO` | Primary repo for issue creation. Default: `kotilabs/aagman-v2`. |
 | `BROWSER_USE_CDP_URL` | Attach to an existing Chrome debug instance, e.g. `http://localhost:9222`. |
@@ -123,7 +123,9 @@ This harness is designed to run against the user’s real Chrome window (not hea
   https://app.staging.v2.aagman.ai/
 ```
 
-Log in once inside that window. Later runs reuse the session:
+### 6. Log in
+
+If you have already logged in inside the Chrome window, just pass `--reuse-session` and the harness will use that session:
 
 ```bash
 aagman-qa run --env staging \
@@ -132,6 +134,27 @@ aagman-qa run --env staging \
   --reuse-session \
   --batch-backtest
 ```
+
+If you are not logged in, run without `--reuse-session`. The harness will open the Aagman staging page in the browser and pause:
+
+```bash
+aagman-qa run --env staging \
+  --manifest manifests/backtest-mixed-8.yaml \
+  --cdp-url http://localhost:9222 \
+  --batch-backtest
+```
+
+You will see a prompt like:
+
+```text
+🔐 Aagman login required.
+   The browser is open at: https://app.staging.v2.aagman.ai/
+   Please log in using the physical Chrome window, then press Enter here to continue...
+```
+
+Log in inside Chrome, then press **Enter** in the terminal. The harness detects the authenticated session and continues.
+
+To skip the manual step, set `AAGMAN_PHONE` and `AAGMAN_OTP` (or pass `--phone` and `--otp`).
 
 ---
 
@@ -171,7 +194,7 @@ aagman-qa run --env staging \
   --push --create-issue
 ```
 
-If the app is logged out, the harness will walk through the phone/OTP login flow.
+If the app is logged out, the harness will open the Aagman page and ask you to log in manually (unless `AAGMAN_PHONE` and `AAGMAN_OTP` are provided, in which case it logs in automatically).
 
 ### Push an existing run to GitHub
 

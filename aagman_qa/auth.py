@@ -87,6 +87,36 @@ class LoginRequiredError(Exception):
     pass
 
 
+def _prompt_manual_login(browser: Browser, base_url: str) -> None:
+    """Open the app and ask the user to log in manually.
+
+    This is the preferred flow when phone/OTP are not available: the harness
+    brings the browser to the Aagman login page, then waits for the user to
+    complete login in the physical Chrome window.
+    """
+    if not _interactive():
+        raise LoginRequiredError(
+            "Aagman login screen detected. "
+            "Log in manually in the active browser tab, or provide --phone and --otp."
+        )
+
+    browser.open(base_url)
+    print("\n🔐 Aagman login required.")
+    print(f"   The browser is open at: {base_url}")
+    print("   Please log in using the physical Chrome window, then press Enter here to continue...")
+    try:
+        input()
+    except EOFError:
+        pass
+
+    for _ in range(60):
+        if _is_logged_in(browser):
+            print("✅ Login detected.")
+            return
+        time.sleep(1)
+    raise LoginRequiredError("Login was not detected within 60 seconds.")
+
+
 def login(
     browser: Browser,
     base_url: str,
@@ -110,29 +140,27 @@ def login(
     phone = phone or config.phone()
     otp = otp or config.otp()
 
-    if not phone or not otp:
-        raise LoginRequiredError(
-            "Aagman login screen detected. "
-            "Make sure the active browser tab is logged into Aagman, "
-            "or provide --phone and --otp / set AAGMAN_PHONE and AAGMAN_OTP."
-        )
+    # If credentials are provided, use the automated OTP flow.
+    if phone and otp:
+        _fill_phone(browser, phone)
+        time.sleep(0.5)
+        _click_continue(browser)
+        time.sleep(3)
 
-    _fill_phone(browser, phone)
-    time.sleep(0.5)
-    _click_continue(browser)
-    time.sleep(3)
+        _switch_to_otp_if_needed(browser)
 
-    _switch_to_otp_if_needed(browser)
+        _fill_otp(browser, otp)
+        time.sleep(0.5)
+        _click_verify(browser)
 
-    _fill_otp(browser, otp)
-    time.sleep(0.5)
-    _click_verify(browser)
+        for _ in range(30):
+            if _is_logged_in(browser):
+                return
+            time.sleep(1)
+        raise RuntimeError("Login did not redirect to dashboard")
 
-    for _ in range(30):
-        if _is_logged_in(browser):
-            return
-        time.sleep(1)
-    raise RuntimeError("Login did not redirect to dashboard")
+    # Otherwise, ask the user to log in manually.
+    _prompt_manual_login(browser, base_url)
 
 
 def login_with_profile(browser: Browser, base_url: str) -> None:
