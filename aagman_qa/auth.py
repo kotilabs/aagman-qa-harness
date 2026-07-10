@@ -104,11 +104,14 @@ def _prompt_manual_login(browser: Browser, base_url: str) -> None:
     print("\n🔐 Aagman login required.")
     print(f"   The browser is open at: {base_url}")
     print("   Please log in using the physical Chrome window.")
-    print("   Once you are logged in, let me know here and I will continue.")
-    try:
-        input("   Press Enter when done... ")
-    except EOFError:
-        pass
+    print("   Once you are logged in, type 'logged in' here and press Enter so I can continue.")
+
+    confirmation = ""
+    while confirmation.lower() != "logged in":
+        try:
+            confirmation = input("   > ").strip()
+        except EOFError:
+            confirmation = ""
 
     if not _is_logged_in(browser):
         raise LoginRequiredError(

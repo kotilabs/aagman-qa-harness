@@ -150,11 +150,10 @@ You will see a prompt like:
 🔐 Aagman login required.
    The browser is open at: https://app.staging.v2.aagman.ai/
    Please log in using the physical Chrome window.
-   Once you are logged in, let me know here and I will continue.
-   Press Enter when done...
+   Once you are logged in, type 'logged in' here and press Enter so I can continue.
 ```
 
-Log in inside Chrome, then press **Enter** in the terminal to tell the harness to continue.
+Log in inside Chrome, then type `logged in` in the terminal and press **Enter**.
 
 To skip the manual step entirely, set `AAGMAN_PHONE` and `AAGMAN_OTP` (or pass `--phone` and `--otp`).
 
