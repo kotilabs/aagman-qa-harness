@@ -91,9 +91,8 @@ def _prompt_manual_login(browser: Browser, base_url: str) -> None:
     """Open the app and ask the user to log in manually.
 
     This is the preferred flow when phone/OTP are not available: the harness
-    brings the browser to the Aagman login page, then waits for the user to
-    complete login in the physical Chrome window. The harness detects the
-    login automatically and continues; no terminal input is required.
+    brings the browser to the Aagman login page, asks the user to log in, and
+    waits for the user to notify the harness before continuing.
     """
     if not _interactive():
         raise LoginRequiredError(
@@ -104,16 +103,19 @@ def _prompt_manual_login(browser: Browser, base_url: str) -> None:
     browser.open(base_url)
     print("\n🔐 Aagman login required.")
     print(f"   The browser is open at: {base_url}")
-    print("   Please log in using the physical Chrome window. The harness will detect it automatically...")
+    print("   Please log in using the physical Chrome window.")
+    print("   Once you are logged in, let me know here and I will continue.")
+    try:
+        input("   Press Enter when done... ")
+    except EOFError:
+        pass
 
-    deadline = time.time() + 300
-    while time.time() < deadline:
-        if _is_logged_in(browser):
-            print("✅ Login detected. Proceeding...")
-            return
-        time.sleep(2)
-
-    raise LoginRequiredError("Login was not detected within 5 minutes.")
+    if not _is_logged_in(browser):
+        raise LoginRequiredError(
+            "Login was not detected after you confirmed. "
+            "Make sure you are logged into Aagman in the active browser tab."
+        )
+    print("✅ Login confirmed. Proceeding...")
 
 
 def login(
