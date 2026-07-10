@@ -1,0 +1,124 @@
+{
+  "run_id": "2026-07-11-042822-staging-chart-mixed-5-4bf818",
+  "timestamp": "2026-07-10T23:03:02.687539+00:00",
+  "env": "staging",
+  "base_url": "https://app.staging.v2.aagman.ai",
+  "manifest": "chart-mixed-5",
+  "total": 5,
+  "pass": 2,
+  "fail": 3,
+  "blocked": 0,
+  "error": 0,
+  "tests": [
+    {
+      "id": "ch-1-reliance-candlesticks",
+      "status": "FAIL",
+      "duration_sec": 46.61,
+      "message": "Vision verification failed: The screen shows only the chat message 'Here's your chart.' but no actual rendered candlestick, line, bar, or OHLC chart is visible.",
+      "prompt": "Chart RELIANCE daily candlesticks for 2024.",
+      "title": "ch-1-reliance-candlesticks",
+      "description": "",
+      "screenshots": [
+        "reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-1-reliance-candlesticks_chart.png",
+        "reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-1-reliance-candlesticks_fail.png"
+      ],
+      "logs": [
+        "Navigated to Research",
+        "Started new research chat",
+        "Submitted prompt: Chart RELIANCE daily candlesticks for 2024....",
+        "Assistant response: Here's your chart....",
+        "Waiting 6.0s for chart render",
+        "Screenshot captured: reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-1-reliance-candlesticks_chart.png",
+        "Vision verdict: no \u2014 The screenshot only shows chat messages about a chart; no actual candlestick, line, bar, or OHLC chart is visible.",
+        "Chart not visible, waiting 10.0s and retrying",
+        "Vision verdict (retry): no \u2014 The screen shows only the chat message 'Here's your chart.' but no actual rendered candlestick, line, bar, or OHLC chart is visible.",
+        "Failure screenshot: reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-1-reliance-candlesticks_fail.png"
+      ]
+    },
+    {
+      "id": "ch-2-nifty-ema",
+      "status": "FAIL",
+      "duration_sec": 39.56,
+      "message": "Vision verification failed: The response says 'Here's your chart' but no actual chart, candlestick, line, bar, or OHLC table is visible in the screenshot.",
+      "prompt": "Show NIFTY 50 with 50-day EMA.",
+      "title": "ch-2-nifty-ema",
+      "description": "",
+      "screenshots": [
+        "reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-2-nifty-ema_chart.png",
+        "reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-2-nifty-ema_fail.png"
+      ],
+      "logs": [
+        "Navigated to Research",
+        "Started new research chat",
+        "Submitted prompt: Show NIFTY 50 with 50-day EMA....",
+        "Assistant response: Here's your chart....",
+        "Waiting 6.0s for chart render",
+        "Screenshot captured: reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-2-nifty-ema_chart.png",
+        "Vision verdict: no \u2014 The chat only shows the text 'Here's your chart.' without any visible candlestick, line, bar, or OHLC chart.",
+        "Chart not visible, waiting 10.0s and retrying",
+        "Vision verdict (retry): no \u2014 The response says 'Here's your chart' but no actual chart, candlestick, line, bar, or OHLC table is visible in the screenshot.",
+        "Failure screenshot: reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-2-nifty-ema_fail.png"
+      ]
+    },
+    {
+      "id": "ch-3-hdfcbank-volume",
+      "status": "PASS",
+      "duration_sec": 28.88,
+      "message": "",
+      "prompt": "Plot HDFCBANK volume for last 3 months.",
+      "title": "ch-3-hdfcbank-volume",
+      "description": "",
+      "screenshots": [
+        "reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-3-hdfcbank-volume_chart.png"
+      ],
+      "logs": [
+        "Navigated to Research",
+        "Started new research chat",
+        "Submitted prompt: Plot HDFCBANK volume for last 3 months....",
+        "Assistant response: Here's your chart....",
+        "Waiting 6.0s for chart render",
+        "Screenshot captured: reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-3-hdfcbank-volume_chart.png",
+        "Vision verdict: yes \u2014 The screenshot displays a visible HDFCBANK candlestick price chart with price axis and volume bars."
+      ]
+    },
+    {
+      "id": "ch-4-tcs-infy-compare",
+      "status": "FAIL",
+      "duration_sec": 133.52,
+      "message": "Timed out waiting for assistant response",
+      "prompt": "Compare TCS and INFY price since Jan 2024.",
+      "title": "ch-4-tcs-infy-compare",
+      "description": "",
+      "screenshots": [
+        "reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-4-tcs-infy-compare_fail.png"
+      ],
+      "logs": [
+        "Navigated to Research",
+        "Started new research chat",
+        "Submitted prompt: Compare TCS and INFY price since Jan 2024....",
+        "Failure screenshot: reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-4-tcs-infy-compare_fail.png"
+      ]
+    },
+    {
+      "id": "ch-5-banknifty-rsi",
+      "status": "PASS",
+      "duration_sec": 29.43,
+      "message": "",
+      "prompt": "Draw BANKNIFTY RSI(14) for 2024.",
+      "title": "ch-5-banknifty-rsi",
+      "description": "",
+      "screenshots": [
+        "reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-5-banknifty-rsi_chart.png"
+      ],
+      "logs": [
+        "Navigated to Research",
+        "Started new research chat",
+        "Submitted prompt: Draw BANKNIFTY RSI(14) for 2024....",
+        "Assistant response: Here's your chart....",
+        "Waiting 6.0s for chart render",
+        "Screenshot captured: reports/2026-07-11-042822-staging-chart-mixed-5-4bf818/screenshots/ch-5-banknifty-rsi_chart.png",
+        "Vision verdict: yes \u2014 The screenshot displays a BANKNIFTY candlestick price chart with price levels on the y-axis."
+      ]
+    }
+  ]
+}
