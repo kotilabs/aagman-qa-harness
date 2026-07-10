@@ -588,6 +588,7 @@ If you are adding new coverage, prefer **batch backtest** and **batch research**
 
 - [ ] Add a proper **Charts feature runner** that tests chart functionality end-to-end (not just UI smoke) and wire it up in the CLI/manifests.
 - [ ] Stabilize and complete the **Options runner** — option chain, payoff builder, and vol surface smoke tests.
+- [ ] Add a **plan mode** for large test suites. When a manifest contains many tests, the harness should auto-split them by paradigm (backtest vs research vs charts vs options) and further break each paradigm into smaller, efficiently sized batches instead of running everything as one giant run.
 
 ---
 
