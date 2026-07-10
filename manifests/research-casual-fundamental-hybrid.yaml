@@ -1,0 +1,224 @@
+name: research-casual-fundamental-hybrid
+env: staging
+tests:
+  # 9. Screener — Casual / Terse
+  - id: scr-09-01-simple-rsi
+    type: research
+    prompt: "Show me NIFTY 50 stocks with RSI above 25."
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-09-02-golden-cross
+    type: research
+    prompt: "Find NIFTY 50 stocks where 50 SMA just crossed above 200 SMA."
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-09-03-death-cross
+    type: research
+    prompt: "Show me BANKNIFTY stocks with a death cross (50 SMA crossing below 200 SMA)."
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-09-04-volume-spike
+    type: research
+    prompt: "Find NIFTY 50 stocks where volume is more than 1.2 times the 20-day average."
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-09-05-52-week-high
+    type: research
+    prompt: "Find NIFTY 50 stocks at their 52-week high."
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-09-06-52-week-low
+    type: research
+    prompt: "Which NIFTY 50 stocks are at 52-week lows?"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-09-07-gap-up
+    type: research
+    prompt: "Show me NIFTY 50 stocks that gapped up more than 1%."
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-09-08-multi-condition
+    type: research
+    prompt: "Find NIFTY 50 stocks where MACD histogram is positive AND ADX is above 25."
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-09-09-above-bollinger
+    type: research
+    prompt: "Find NIFTY 50 stocks trading above their upper Bollinger Band."
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-09-10-market-data-query
+    type: chart_query
+    prompt: "What is the latest price of RELIANCE?"
+    symbol: RELIANCE
+    description: latest price or OHLC data
+    timeout: 120
+    vision_timeout: 60
+
+  - id: scr-09-11-historical-data
+    type: chart_query
+    prompt: "Show me INFY daily bars for the last 2 months."
+    symbol: INFY
+    description: daily price chart or OHLC table
+    timeout: 120
+    vision_timeout: 60
+
+  # 10. Screener — Fundamental
+  - id: scr-10-01-roe
+    type: research
+    prompt: "Show me stocks with ROE greater than 15%"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "ROE", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-10-02-pe-ratio
+    type: research
+    prompt: "Find stocks with PE ratio below 15"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "PE", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-10-03-low-debt
+    type: research
+    prompt: "Which stocks have debt to equity ratio less than 0.5?"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "debt", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-10-04-value-screen
+    type: research
+    prompt: "Value stocks with PE below 12, price to book below 1, and dividend yield above 4%"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-10-05-quality-screen
+    type: research
+    prompt: "Find high quality stocks — ROE above 18, ROCE above 20, and net profit margin above 12"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-10-06-sector-filter
+    type: research
+    prompt: "Show FMCG sector stocks with ROE above 15"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "FMCG", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-10-07-shareholding
+    type: research
+    prompt: "Find stocks with promoter holding above 70% and FII above 10%"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "promoter", "FII", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-10-08-cash-flow
+    type: research
+    prompt: "Show stocks with positive operating cash flow and negative investing cash flow"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "cash flow", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-10-09-or-condition
+    type: research
+    prompt: "Stocks where promoter holding is above 70% OR FII holding is above 25%"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "promoter", "FII", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-10-10-specific-symbols-lookup
+    type: research
+    prompt: "From RELIANCE, TCS, INFY, HDFCBANK — show me ROE, PE ratio, and debt to equity"
+    success_markers: ["RELIANCE", "TCS", "INFY", "HDFCBANK", "ROE", "PE", "debt"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-10-11-sorting-pagination
+    type: research
+    prompt: "Show me top 10 stocks by ROE, sorted highest first"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "ROE", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  # 11. Screener — Hybrid (Fundamental + Technical)
+  - id: scr-11-01-roe-macd
+    type: research
+    prompt: "ROE > 10 stocks that are showing bullish MACD crossover"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-11-02-value-ema-trend
+    type: research
+    prompt: "Find undervalued stocks (PE < 15, PB < 1.5) with EMA 20 crossing above EMA 50"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-11-03-low-debt-uptrend
+    type: research
+    prompt: "Low debt stocks (D/E < 0.3) that are in an uptrend — price above 50 day EMA"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-11-04-promoter-macd
+    type: research
+    prompt: "Stocks with promoter holding above 60% and MACD histogram turning positive"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "promoter", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-11-05-dividend-rsi-oversold
+    type: research
+    prompt: "Dividend yield above 4% stocks that have RSI below 30 (oversold value picks)"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "dividend", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-11-06-banking-roe-bollinger
+    type: research
+    prompt: "Banking stocks with ROE > 15 and price breaking out above Bollinger Band Upper"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "bank", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-11-07-cashflow-volume-spike
+    type: research
+    prompt: "Cash flow positive companies (cash from operations > 0) with volume spike above 2x average"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "cash flow", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-11-08-high-margin-52week-low
+    type: research
+    prompt: "High margin stocks (operating margin > 25%) that are near 52-week lows — price < EMA 200"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: scr-11-09-fii-candlestick
+    type: research
+    prompt: "FII buying stocks (FII > 20%) with bullish engulfing candle pattern"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "FII", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120

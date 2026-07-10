@@ -1,0 +1,41 @@
+name: chart-queries-test
+env: staging
+tests:
+  - id: chart-reliance-2024
+    type: chart_query
+    prompt: "Chart RELIANCE daily candlesticks for 2024."
+    symbol: RELIANCE
+    description: daily candlestick chart for 2024
+    timeout: 120
+    vision_timeout: 60
+
+  - id: chart-nifty-50-ema
+    type: chart_query
+    prompt: "Show NIFTY 50 with 50-day EMA."
+    symbol: "NIFTY 50"
+    description: price chart with 50-day EMA
+    timeout: 120
+    vision_timeout: 60
+
+  - id: chart-hdfcbank-volume
+    type: chart_query
+    prompt: "Plot HDFCBANK volume for last 3 months."
+    symbol: HDFCBANK
+    description: volume chart for last 3 months
+    timeout: 120
+    vision_timeout: 60
+
+  - id: research-tcs-vs-infy
+    type: research
+    prompt: "Compare TCS and INFY price since Jan 2024."
+    success_markers: ["TCS", "INFY", "Comparison", "Score", "price", "Jan 2024"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 120
+
+  - id: chart-banknifty-rsi
+    type: chart_query
+    prompt: "Draw BANKNIFTY RSI(14) for 2024."
+    symbol: BANKNIFTY
+    description: RSI(14) chart for 2024
+    timeout: 120
+    vision_timeout: 60

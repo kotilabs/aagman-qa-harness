@@ -89,3 +89,25 @@ def llm_base_url() -> str:
 
 def llm_enabled() -> bool:
     return bool(deepseek_api_key())
+
+
+# Vision API configuration for screenshot-based verification (e.g. chart detection).
+def vision_api_key() -> str | None:
+    return (
+        os.getenv("VISION_API_KEY")
+        or os.getenv("OPENAI_API_KEY")
+        or os.getenv("KIMI_API_KEY")
+        or os.getenv("DEEPSEEK_API_KEY")
+    )
+
+
+def vision_base_url() -> str:
+    return os.getenv("VISION_BASE_URL", "https://api.openai.com/v1")
+
+
+def vision_model() -> str:
+    return os.getenv("VISION_MODEL", "gpt-4o-mini")
+
+
+def vision_enabled() -> bool:
+    return bool(vision_api_key())

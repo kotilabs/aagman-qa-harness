@@ -13,7 +13,7 @@ from .checks import TestResult
 from .clarifications import get_answer_provider
 from .github_publisher import publish
 from .reporter import write_report
-from .runners import backtest, charts, options, research
+from .runners import backtest, chart_query, charts, options, research
 
 RUNNERS = {
     "backtest": backtest.run,
@@ -21,6 +21,8 @@ RUNNERS = {
     "screener": research.run,
     "charts": charts.run,
     "options": options.run,
+    "chart_query": chart_query.run,
+    "chart": chart_query.run,
 }
 
 

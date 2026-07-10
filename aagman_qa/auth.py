@@ -93,6 +93,11 @@ def login(
     phone: str | None = None,
     otp: str | None = None,
 ) -> None:
+    # Don't reload if we already have a live Aagman session. Repeated full-page
+    # reloads can drop the session cookies and force another OTP.
+    if _is_logged_in(browser):
+        return
+
     browser.open(base_url)
     time.sleep(2)
 

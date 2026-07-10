@@ -1,0 +1,65 @@
+name: research-hybrid-test
+env: staging
+tests:
+  - id: scr-11-01-roe-macd
+    type: research
+    prompt: "ROE > 10 stocks that are showing bullish MACD crossover"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 180
+
+  - id: scr-11-02-value-ema-trend
+    type: research
+    prompt: "Find undervalued stocks (PE < 15, PB < 1.5) with EMA 20 crossing above EMA 50"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 180
+
+  - id: scr-11-03-low-debt-uptrend
+    type: research
+    prompt: "Low debt stocks (D/E < 0.3) that are in an uptrend — price above 50 day EMA"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 180
+
+  - id: scr-11-04-promoter-macd
+    type: research
+    prompt: "Stocks with promoter holding above 60% and MACD histogram turning positive"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 180
+
+  - id: scr-11-05-dividend-rsi-oversold
+    type: research
+    prompt: "Dividend yield above 4% stocks that have RSI below 30 (oversold value picks)"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 180
+
+  - id: scr-11-06-banking-roe-bollinger
+    type: research
+    prompt: "Banking stocks with ROE > 15 and price breaking out above Bollinger Band Upper"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 180
+
+  - id: scr-11-07-cashflow-volume-spike
+    type: research
+    prompt: "Cash flow positive companies (cash from operations > 0) with volume spike above 2x average"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 180
+
+  - id: scr-11-08-high-margin-52week-low
+    type: research
+    prompt: "High margin stocks (operating margin > 25%) that are near 52-week lows — price < EMA 200"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 180
+
+  - id: scr-11-09-fii-candlestick
+    type: research
+    prompt: "FII buying stocks (FII > 20%) with bullish engulfing candle pattern"
+    success_markers: ["Found", "matches", "Symbol", "LTP", "Results"]
+    error_markers: ["Something went wrong", "failed to fetch", "error occurred", "Unable to process"]
+    timeout: 180
