@@ -1,3 +1,5 @@
+import ast
+import json
 import re
 import time
 from pathlib import Path
@@ -46,6 +48,34 @@ def _main_text(browser: Browser) -> str:
 """
         )
     )
+
+
+def _goto_workspace(browser: Browser, url: str, timeout: float = 10.0) -> None:
+    """Navigate the current tab to a saved workspace URL without tearing down the session."""
+    browser.eval(f"window.location.href = {json.dumps(url)};")
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        current = browser.current_url()
+        if isinstance(current, str) and url in current:
+            return
+        time.sleep(0.5)
+
+
+_UUID_RE = re.compile(
+    r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.IGNORECASE
+)
+
+
+def _wait_for_workspace_url(browser: Browser, deadline_sec: float = 15.0) -> str:
+    """Return the workspace URL once Aagman has assigned a UUID path to it."""
+    deadline = time.time() + deadline_sec
+    while time.time() < deadline:
+        url = browser.current_url()
+        if isinstance(url, str) and _UUID_RE.search(url):
+            return url
+        time.sleep(0.5)
+    url = browser.current_url()
+    return url if isinstance(url, str) else ""
 
 
 def _is_on_research(browser: Browser) -> bool:
@@ -170,6 +200,14 @@ def _last_ai_message(browser: Browser) -> dict | None:
 """)
     if out is None:
         return None
+
+    # browser-use sometimes serialises JS arrays as Python repr strings.
+    if isinstance(out, str):
+        try:
+            out = ast.literal_eval(out)
+        except Exception:
+            return None
+
     if isinstance(out, list) and len(out) == 3:
         return {"text": out[0], "totalRows": out[1], "dataRows": out[2]}
     return None
@@ -278,8 +316,8 @@ def _results_table_present(browser: Browser) -> bool:
     )
 
 
-def _capture_screenshot(browser: Browser, path: Path, full_page: bool = True) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
+def _scroll_to_bottom(browser: Browser) -> None:
+    """Scroll the main scrollable element to the absolute bottom."""
     try:
         browser.eval("""
 (() => {
@@ -292,6 +330,11 @@ def _capture_screenshot(browser: Browser, path: Path, full_page: bool = True) ->
 """)
     except Exception:
         pass
+
+
+def _capture_screenshot(browser: Browser, path: Path, full_page: bool = True) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _scroll_to_bottom(browser)
     browser.screenshot(path, full_page=full_page)
     return path
 
@@ -426,3 +469,186 @@ def run(
             result.add_log(f"Screenshot failed: {ss_exc}")
 
     return result
+
+
+def _chunks(lst: list, size: int):
+    """Yield successive chunks of `size` from `lst`."""
+    for i in range(0, len(lst), size):
+        yield lst[i : i + size]
+
+
+def run_batch(
+    browser: Browser,
+    base_url: str,
+    tests: list[dict],
+    artifact_dir: Path,
+    answer_provider=None,
+    batch_size: int = 10,
+    settle_delay: float = 480,
+    check_timeout: float = 90,
+) -> list[TestResult]:
+    """Run research/screener prompts in batches.
+
+    For each chunk of up to `batch_size` prompts we:
+      1. Navigate to Research and start a fresh chat for every prompt.
+      2. Submit the prompt and record the workspace URL.
+      3. Wait `settle_delay` seconds so Aagman can finish processing offline.
+      4. Revisit each workspace and quickly check for a rendered result.
+
+    This avoids the long synchronous waits that often time out when Aagman
+    takes several minutes to run a screener query.
+    """
+    if not tests:
+        return []
+
+    all_results: list[TestResult] = []
+
+    for chunk_idx, chunk in enumerate(_chunks(tests, batch_size), start=1):
+        chunk_results: list[TestResult] = []
+        items: list[dict] = []
+
+        _navigate_to_research(browser, base_url)
+        print(f"  Batch {chunk_idx}: on Research workspace")
+
+        # --- submission phase ---
+        for test in chunk:
+            test_id = test["id"]
+            prompt = test["prompt"]
+            error_markers = test.get(
+                "error_markers",
+                [
+                    "Something went wrong",
+                    "failed to fetch",
+                    "error occurred",
+                    "Unable to process",
+                ],
+            )
+            timeout = test.get("timeout", 300)
+            result = TestResult(id=test_id, status="PASS", duration_sec=0.0, prompt=prompt)
+            start = time.time()
+            result.add_log(f"Batch {chunk_idx}: starting new research chat")
+
+            _start_new_screener_chat(browser)
+            _activate_chat_tab(browser)
+            time.sleep(0.5)
+
+            submit_aagman_prompt(browser, prompt)
+
+            # Aagman allocates a UUID workspace path only after a prompt has been
+            # sent. Capture that URL so we can return to this exact workspace
+            # later instead of the generic /screener page.
+            workspace_url = _wait_for_workspace_url(browser, deadline_sec=15)
+            result.add_log(
+                f"Batch {chunk_idx}: prompt submitted; workspace={workspace_url}"
+            )
+
+            items.append({
+                "test": test,
+                "result": result,
+                "start": start,
+                "workspace_url": workspace_url,
+                "error_markers": error_markers,
+                "timeout": timeout,
+            })
+            chunk_results.append(result)
+
+        print(
+            f"⏳ Batch {chunk_idx}: submitted {len(items)} research prompts; "
+            f"waiting {settle_delay}s before checking results..."
+        )
+        time.sleep(settle_delay)
+
+        # --- result-check phase ---
+        for item in items:
+            test = item["test"]
+            result = item["result"]
+            start = item["start"]
+            workspace_url = item["workspace_url"]
+            error_markers = item["error_markers"]
+            test_id = test["id"]
+
+            try:
+                if isinstance(workspace_url, str) and workspace_url != browser.current_url():
+                    _goto_workspace(browser, workspace_url)
+                    time.sleep(2)
+
+                # The verdict is at the bottom of the chat/workspace, not in a
+                # separate Results tab. Scroll to the end and read the last AI
+                # message.
+                _scroll_to_bottom(browser)
+                time.sleep(1)
+
+                outcome = _check_batch_result(
+                    browser,
+                    error_markers,
+                    timeout=check_timeout,
+                )
+
+                if outcome == "result":
+                    result.add_log("Result detected after batch settle")
+                    assert_no_error_texts(browser, error_markers)
+                    ss_path = artifact_dir / f"{test_id}_pass.png"
+                    _capture_screenshot(browser, ss_path)
+                    result.add_screenshot(ss_path)
+                    result.status = "PASS"
+                elif outcome == "error":
+                    raise RuntimeError("Research error marker detected after batch settle")
+                else:
+                    # Capture whatever is on screen even on timeout so the user
+                    # can inspect the final state.
+                    ss_path = artifact_dir / f"{test_id}_timeout.png"
+                    _capture_screenshot(browser, ss_path)
+                    result.add_screenshot(ss_path)
+                    raise RuntimeError(
+                        "Timeout waiting for screener result after batch settle"
+                    )
+            except Exception as exc:
+                result.status = "FAIL"
+                result.message = str(exc)
+                ss_path = artifact_dir / f"{test_id}_fail.png"
+                try:
+                    capture_failure_screenshot(browser, ss_path)
+                    result.add_screenshot(ss_path)
+                except Exception as ss_exc:
+                    result.add_log(f"Screenshot failed: {ss_exc}")
+            finally:
+                result.duration_sec = round(time.time() - start, 2)
+
+        all_results.extend(chunk_results)
+
+    return all_results
+
+
+def _check_batch_result(
+    browser: Browser,
+    error_markers: list[str],
+    timeout: float = 30,
+) -> str | None:
+    """Quick result check for batched workspaces.
+
+    Scrolls to the bottom of the workspace and looks at the last assistant
+    message for a verdict. Returns 'result', 'error', or None on timeout.
+    """
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        _scroll_to_bottom(browser)
+        time.sleep(0.5)
+
+        text = _main_text(browser)
+        lower = text.lower()
+        for err in error_markers:
+            if err.lower() in lower:
+                return "error"
+
+        ai = _last_ai_message(browser)
+        if _ai_message_has_result(ai):
+            return "result"
+
+        # If nothing is loading anymore, consider any result-looking text or an
+        # actual rendered data table a pass.
+        if not _is_loading(text) and (_has_result(text) or _results_table_present(browser)):
+            return "result"
+
+        time.sleep(1)
+
+    return None

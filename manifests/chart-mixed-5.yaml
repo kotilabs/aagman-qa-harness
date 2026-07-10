@@ -1,0 +1,22 @@
+name: chart-mixed-5
+env: staging
+tests:
+  - id: ch-1-reliance-candlesticks
+    type: chart
+    prompt: "Chart RELIANCE daily candlesticks for 2024."
+
+  - id: ch-2-nifty-ema
+    type: chart
+    prompt: "Show NIFTY 50 with 50-day EMA."
+
+  - id: ch-3-hdfcbank-volume
+    type: chart
+    prompt: "Plot HDFCBANK volume for last 3 months."
+
+  - id: ch-4-tcs-infy-compare
+    type: chart
+    prompt: "Compare TCS and INFY price since Jan 2024."
+
+  - id: ch-5-banknifty-rsi
+    type: chart
+    prompt: "Draw BANKNIFTY RSI(14) for 2024."

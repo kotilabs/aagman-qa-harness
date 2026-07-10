@@ -36,22 +36,48 @@ class Browser:
         if self.cdp_url:
             args.extend(["--cdp-url", self.cdp_url])
         else:
-            if self.headed:
-                args.append("--headed")
             if self.profile:
                 args.extend(["--profile", self.profile])
+            # Only pass headed/headless when browser-use is launching the
+            # browser. With CDP these flags cause session-config mismatches.
+            args.append("--headed" if self.headed else "--headless")
         args.extend(["--session", self.session])
         return args
 
     def _reuse_args(self) -> list[str]:
         """Args for subsequent commands in an already-running session."""
-        return [self._bin, "--session", self.session]
+        # Do NOT pass --cdp-url here: browser-use stores it in the session state
+        # and re-supplying it makes the CLI think the config has changed.
+        args = [self._bin]
+        # Mirror _start_args: only pass headed/headless for non-CDP sessions.
+        if not self.cdp_url:
+            args.append("--headed" if self.headed else "--headless")
+        args.extend(["--session", self.session])
+        return args
+
+    def _session_state_path(self) -> Path:
+        return Path.home() / ".browser-use" / f"{self.session}.state.json"
+
+    def _session_is_running(self) -> bool:
+        """Check whether a browser-use session is already alive on disk."""
+        path = self._session_state_path()
+        if not path.exists():
+            return False
+        try:
+            data = json.loads(path.read_text())
+            return data.get("phase") == "running"
+        except Exception:
+            return False
 
     def _run(self, sub_args: list[str], timeout: int = 60) -> str:
-        if self.reuse or self._started:
-            cmd = self._reuse_args() + sub_args
-        else:
+        # Use start args only when we are really creating the session. If the
+        # session is already running (e.g. leftover from a previous run or a
+        # freshly-created Browser object), re-use it so browser-use does not
+        # complain about a "different config".
+        if not self._started and not self._session_is_running():
             cmd = self._start_args() + sub_args
+        else:
+            cmd = self._reuse_args() + sub_args
         result = subprocess.run(
             cmd,
             capture_output=True,
@@ -68,10 +94,19 @@ class Browser:
         if not self.reuse:
             # Ensure a fresh session for this run.
             self._force_close()
-        if self.cdp_url and not self._started:
-            # browser-use requires `connect` first for CDP sessions.
-            self._run(["connect"], timeout=timeout)
-        self._run(["open", url], timeout=timeout)
+            self._run(["open", url], timeout=timeout)
+            return
+        # For CDP reuse, navigate the current tab via JS instead of using
+        # browser-use `open`, which tends to create a new (logged-out) tab.
+        self._attach_to_active_tab()
+        self.eval(f"window.location.href = {json.dumps(url)};")
+        # Wait for navigation to settle.
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            current = self.current_url()
+            if isinstance(current, str) and url in current:
+                return
+            time.sleep(0.5)
 
     def _force_close(self) -> None:
         try:
@@ -169,5 +204,51 @@ class Browser:
                     return int(m.group(1))
         return None
 
+    def _attach_to_active_tab(self) -> None:
+        """When reusing a physical Chrome via CDP, browser-use sometimes attaches
+        to a fresh `about:blank` target instead of the existing tab. Switch to
+        the active tab (index 0) on the first command so subsequent operations
+        run in the real page.
+        """
+        if self.cdp_url and self.reuse and not self._started:
+            try:
+                self._run(["tab", "switch", "0"], timeout=30)
+            except BrowserError:
+                pass
+
     def current_url(self) -> str:
+        self._attach_to_active_tab()
         return self.eval("window.location.href")
+
+    def tab_list(self) -> list[tuple[int, str]]:
+        """Return a list of (index, url) for every open tab."""
+        out = self._run(["tab", "list"], timeout=30)
+        tabs: list[tuple[int, str]] = []
+        for line in out.splitlines():
+            line = line.strip()
+            if not line or line.startswith("TAB"):
+                continue
+            parts = line.split(None, 1)
+            if parts:
+                try:
+                    idx = int(parts[0])
+                    url = parts[1] if len(parts) > 1 else ""
+                    tabs.append((idx, url))
+                except ValueError:
+                    continue
+        return tabs
+
+    def tab_new(self) -> int:
+        """Open a new blank tab and return its index."""
+        before = {idx for idx, _ in self.tab_list()}
+        self._run(["tab", "new"], timeout=30)
+        after = self.tab_list()
+        for idx, _ in after:
+            if idx not in before:
+                return idx
+        # Fallback: newest tab is the last one in the list.
+        return after[-1][0] if after else 0
+
+    def tab_switch(self, index: int) -> None:
+        """Switch to the tab at the given index."""
+        self._run(["tab", "switch", str(index)], timeout=30)

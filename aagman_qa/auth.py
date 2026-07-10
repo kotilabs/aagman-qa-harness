@@ -98,8 +98,11 @@ def login(
     if _is_logged_in(browser):
         return
 
-    browser.open(base_url)
-    time.sleep(2)
+    # When reusing a physical Chrome via CDP, only navigate if the active tab
+    # is not already on Aagman. A forced reload often logs the user out.
+    if not browser.reuse or not browser.cdp_url:
+        browser.open(base_url)
+        time.sleep(2)
 
     if _is_logged_in(browser):
         return
@@ -110,7 +113,8 @@ def login(
     if not phone or not otp:
         raise LoginRequiredError(
             "Aagman login screen detected. "
-            "Log in manually and rerun, or provide --phone and --otp / set AAGMAN_PHONE and AAGMAN_OTP."
+            "Make sure the active browser tab is logged into Aagman, "
+            "or provide --phone and --otp / set AAGMAN_PHONE and AAGMAN_OTP."
         )
 
     _fill_phone(browser, phone)

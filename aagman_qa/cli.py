@@ -66,7 +66,9 @@ def cmd_run(args: argparse.Namespace) -> int:
     profile = args.profile or config.browser_profile()
     cdp_url = args.cdp_url or config.browser_cdp_url()
     reuse = bool(args.reuse_session)
-    session = args.reuse_session or f"aagman-qa-{run_id}"
+    # Always use a per-run session name so browser-use doesn't reuse a stale
+    # session config from a previous invocation (different CDP URL, headed flag, etc.).
+    session = f"aagman-qa-{run_id}"
     browser = Browser(session=session, headed=args.headed, profile=profile, cdp_url=cdp_url, reuse=reuse)
 
     results: list[TestResult] = []
@@ -87,6 +89,63 @@ def cmd_run(args: argparse.Namespace) -> int:
         return 1
 
     try:
+        if args.batch_research:
+            research_tests = [
+                t for t in tests
+                if t.get("type", "backtest").lower() in {"research", "screener"}
+            ]
+            other_tests = [
+                t for t in tests
+                if t.get("type", "backtest").lower() not in {"research", "screener"}
+            ]
+            if research_tests:
+                print(
+                    f"\n▶ Running {len(research_tests)} research/screener test(s) in batch mode..."
+                )
+                batch_results = research.run_batch(
+                    browser,
+                    base_url,
+                    research_tests,
+                    artifact_dir,
+                    answer_provider=answer_provider,
+                    batch_size=args.batch_size,
+                    settle_delay=args.batch_delay,
+                    check_timeout=args.batch_check_timeout,
+                )
+                results.extend(batch_results)
+                for result in batch_results:
+                    icon = {"PASS": "✅", "FAIL": "❌", "BLOCKED": "🚧", "ERROR": "⚠️"}.get(result.status, "❓")
+                    print(f"  {icon} {result.status} — {result.duration_sec}s — {result.message or 'OK'}")
+            tests = other_tests
+
+        if args.batch_backtest:
+            backtest_tests = [
+                t for t in tests
+                if t.get("type", "backtest").lower() == "backtest"
+            ]
+            other_tests = [
+                t for t in tests
+                if t.get("type", "backtest").lower() != "backtest"
+            ]
+            if backtest_tests:
+                print(
+                    f"\n▶ Running {len(backtest_tests)} backtest(s) in batch mode..."
+                )
+                batch_results = backtest.run_batch(
+                    browser,
+                    base_url,
+                    backtest_tests,
+                    artifact_dir,
+                    answer_provider=answer_provider,
+                    batch_size=args.batch_size,
+                    check_timeout=args.batch_check_timeout,
+                )
+                results.extend(batch_results)
+                for result in batch_results:
+                    icon = {"PASS": "✅", "FAIL": "❌", "BLOCKED": "🚧", "ERROR": "⚠️"}.get(result.status, "❓")
+                    print(f"  {icon} {result.status} — {result.duration_sec}s — {result.message or 'OK'}")
+            tests = other_tests
+
         for test in tests:
             test_type = test.get("type", "backtest").lower()
             runner = RUNNERS.get(test_type)
@@ -163,7 +222,7 @@ def main() -> int:
     run_parser.add_argument("--headless", dest="headed", action="store_false", help="Run headless browser")
     run_parser.add_argument("--profile", help="Use a real Chrome profile (e.g. kotilabs.com). Falls back to BROWSER_USE_PROFILE env var.")
     run_parser.add_argument("--cdp-url", help="Connect to an existing Chrome via CDP (e.g. http://localhost:9222). Falls back to BROWSER_USE_CDP_URL env var.")
-    run_parser.add_argument("--reuse-session", help="Reuse an already-running browser-use session instead of starting a new one.")
+    run_parser.add_argument("--reuse-session", action="store_true", help="Reuse an already-running browser via CDP instead of starting a new one.")
     run_parser.add_argument("--phone", help="Phone number for login. Falls back to AAGMAN_PHONE env var.")
     run_parser.add_argument("--otp", help="OTP for login. Falls back to AAGMAN_OTP env var.")
     run_parser.add_argument("--output-dir", default="reports", help="Directory for reports")
@@ -172,6 +231,11 @@ def main() -> int:
     run_parser.add_argument("--push", action="store_true", help="Push results to GitHub after run")
     run_parser.add_argument("--issue", type=int, help="Existing GitHub issue number to comment on")
     run_parser.add_argument("--create-issue", action="store_true", help="Create a new GitHub issue with the report")
+    run_parser.add_argument("--batch-research", action="store_true", help="Submit research/screener prompts in batches and check results after a delay")
+    run_parser.add_argument("--batch-backtest", action="store_true", help="Submit backtest prompts in batches and check report cards after a delay")
+    run_parser.add_argument("--batch-size", type=int, default=10, help="Max prompts per batch (default: 10)")
+    run_parser.add_argument("--batch-delay", type=int, default=480, help="Seconds to wait after submitting a batch before checking results (default: 480)")
+    run_parser.add_argument("--batch-check-timeout", type=int, default=90, help="Timeout per workspace when checking batched results (default: 90)")
     run_parser.set_defaults(func=cmd_run)
 
     push_parser = sub.add_parser("push", help="Push an existing local report to GitHub")

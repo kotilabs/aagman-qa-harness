@@ -1,0 +1,72 @@
+name: research-mixed-7
+env: staging
+tests:
+  - id: rs-8.1-sma-trend-filter
+    type: research
+    prompt: |
+      Show me NIFTY 50 stocks on 1-day bars where Close is above SMA(20) AND Close is above SMA(50). Use date range 1 July 2024 to 31 December 2024.
+    error_markers:
+      - "Something went wrong"
+      - "failed to fetch"
+      - "error occurred"
+      - "Unable to process"
+
+  - id: rs-8.2-rsi-overbought
+    type: research
+    prompt: |
+      Find NIFTY 50 stocks with RSI(14) above 70 on 1-day bars from 1 July 2024 to 31 December 2024.
+    error_markers:
+      - "Something went wrong"
+      - "failed to fetch"
+      - "error occurred"
+      - "Unable to process"
+
+  - id: rs-8.3-macd-histogram-positive
+    type: research
+    prompt: |
+      Find NIFTY 50 stocks where MACD histogram (12, 26, 9) is positive on 1d from 1 July 2024 to 31 December 2024.
+    error_markers:
+      - "Something went wrong"
+      - "failed to fetch"
+      - "error occurred"
+      - "Unable to process"
+
+  - id: rs-8.4-stochastic-crossover
+    type: research
+    prompt: |
+      Find NIFTY 50 stocks where Stochastic %K crosses above %D and both are below 30. Daily timeframe, 1 July 2024 to 31 December 2024.
+    error_markers:
+      - "Something went wrong"
+      - "failed to fetch"
+      - "error occurred"
+      - "Unable to process"
+
+  - id: rs-8.5-bullish-engulfing
+    type: research
+    prompt: |
+      Find NIFTY 50 stocks with bullish engulfing candlestick pattern on daily bars. Date range July 2024 to December 2024.
+    error_markers:
+      - "Something went wrong"
+      - "failed to fetch"
+      - "error occurred"
+      - "Unable to process"
+
+  - id: rs-8.6-adx-strong-trend
+    type: research
+    prompt: |
+      Show me NIFTY 50 stocks where ADX(14) is above 25 on daily timeframe. Date range: 1 July 2024 to 31 December 2024.
+    error_markers:
+      - "Something went wrong"
+      - "failed to fetch"
+      - "error occurred"
+      - "Unable to process"
+
+  - id: rs-8.7-aroon-bullish-trend
+    type: research
+    prompt: |
+      Show me NIFTY 50 stocks where AROON Up(25) is above 70 AND AROON Down(25) is below 30, and close is above SMA(200). 1d, July 2024 to December 2024.
+    error_markers:
+      - "Something went wrong"
+      - "failed to fetch"
+      - "error occurred"
+      - "Unable to process"
