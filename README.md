@@ -11,7 +11,7 @@ A CLI QA harness for the [Aagman](https://app.aagman.ai/) web app. It drives a r
 | **Backtest regression** | ✅ Stable (batch mode) | Submits prompts one-per-workspace, orchestrates `run risk checks` → `run backtest`, and verifies the report card. |
 | **Research / Screener smoke** | ✅ Stable (batch mode) | Submits screener prompts in parallel workspaces, lets Aagman process offline, then checks each workspace for a results table or "Found 0 matches". |
 | **Charts UI smoke** | ⚠️ Partial | Opens Charts, cycles timeframes, adds indicators, and verifies the canvas. Works in simple cases but selectors are still brittle. |
-| **Chart query (natural language)** | ⚠️ Partial | Asks for a chart in Research chat, waits for an acknowledgement, screenshots the reply and uses a vision check to confirm a chart rendered. |
+| **Chart query (natural language)** | ✅ Runner stable; product rendering flaky | Asks for a chart in Research chat, waits for an acknowledgement, screenshots the reply and uses a vision check to confirm a chart rendered. |
 | **Options smoke** | 🚧 Experimental | Loads Option Chain, adds/removes Payoff Builder legs, and checks Vol Surface. Selectors are not final. |
 | **Failure artifacts** | ✅ | Every failing test captures a full-page screenshot; final report + screenshots are uploaded to a public GitHub artifacts repo so images can be embedded in issues. |
 | **GitHub publishing** | ✅ | One command can comment on an existing issue **or** create a new issue with a standardized report template. |
@@ -544,7 +544,7 @@ The harness has been used end-to-end on staging. The current stable paths are:
 - ✅ **Research batch runs** — 7 mixed screener/research prompts passed using the submit-then-settle workflow.
 - ✅ **GitHub publishing** — reports + screenshots pushed to `iamaryansinha/aagman-qa-screenshots` and issues created on the configured repo.
 - ⚠️ **Charts UI smoke** — works on simple pages, but selectors need maintenance as the UI evolves.
-- ⚠️ **Chart query (vision)** — depends on Aagman rendering the chart widget; 2 of 5 recent prompts passed, 3 failed because the chart was not visible or the assistant timed out.
+- ✅ **Chart query (vision)** — the runner is stable and correctly reports PASS/FAIL. In the latest run it caught real Aagman rendering issues: 2 of 5 prompts rendered a chart, 3 failed because Aagman either returned text without a chart widget or timed out.
 - 🚧 **Options smoke** — still experimental; not yet run in a stable batch.
 
 If you are adding new coverage, prefer **batch backtest** and **batch research**; they are the most reliable.
