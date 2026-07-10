@@ -562,12 +562,8 @@ If you are adding new coverage, prefer **batch backtest** and **batch research**
 
 ## Roadmap / known gaps
 
-- [ ] Stabilize charts/options selectors once the app UI stabilizes.
-- [ ] Make backtest internal delays (`risk_delay`, `backtest_delay`, `result_delay`) configurable from CLI flags.
-- [ ] Add retry logic for transient bot-detection or network stalls.
-- [ ] Support parallel test execution across multiple browser sessions.
-- [ ] Add a `--dry-run` mode that validates manifests without opening the browser.
-- [ ] Backfill unit tests for manifest parsing and reporter output.
+- [ ] Add a proper **Charts feature runner** that tests chart functionality end-to-end (not just UI smoke) and wire it up in the CLI/manifests.
+- [ ] Stabilize and complete the **Options runner** — option chain, payoff builder, and vol surface smoke tests.
 
 ---
 
